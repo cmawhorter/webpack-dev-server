@@ -33,11 +33,7 @@ html {
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	height: -webkit-calc(100% - 30px);
-	height: -moz-calc(100% - 30px);
-	height: -ms-calc(100% - 30px);
-	height: -o-calc(100% - 30px);
-	height: calc(100% - 30px);
+	height: 100%;
 	border: 0;
 }
 
