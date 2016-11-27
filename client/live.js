@@ -8,20 +8,12 @@ var currentHash = "";
 
 $(function() {
 	$("body").html(require("./page.jade")());
-	var status = $("#status");
-	var okness = $("#okness");
-	var $errors = $("#errors");
 	var iframe = $("#iframe");
-	var header = $(".header");
 
 	var contentPage = window.location.pathname.substr("/webpack-dev-server".length) + window.location.search;
 
-	status.text("Connecting to sockjs server...");
-	$errors.hide();
+	console.debug("Connecting to sockjs server...");
 	iframe.hide();
-	header.css({
-		borderColor: "#96b5b4"
-	});
 
 	var onSocketMsg = {
 		hot: function() {
@@ -29,64 +21,37 @@ $(function() {
 			iframe.attr("src", contentPage + window.location.hash);
 		},
 		invalid: function() {
-			okness.text("");
-			status.text("App updated. Recompiling...");
-			header.css({
-				borderColor: "#96b5b4"
-			});
-			$errors.hide();
+			console.info("App updated. Recompiling...");
 			if(!hot) iframe.hide();
 		},
 		hash: function(hash) {
 			currentHash = hash;
 		},
 		"still-ok": function() {
-			okness.text("");
-			status.text("App ready.");
-			header.css({
-				borderColor: ""
-			});
-			$errors.hide();
+			console.debug("App ready.");
 			if(!hot) iframe.show();
 		},
 		ok: function() {
-			okness.text("");
-			$errors.hide();
 			reloadApp();
 		},
 		warnings: function() {
-			okness.text("Warnings while compiling.");
-			$errors.hide();
+			console.warn("Warnings while compiling.");
 			reloadApp();
 		},
 		errors: function(errors) {
-			status.text("App updated with errors. No reload!");
-			okness.text("Errors while compiling.");
-			$errors.text("\n" + stripAnsi(errors.join("\n\n\n")) + "\n\n");
-			header.css({
-				borderColor: "#ebcb8b"
-			});
-			$errors.show();
+			console.debug("App updated with errors. No reload!");
+			console.log("Errors while compiling.");
+			console.error(errors);
 			iframe.hide();
 		},
 		"proxy-error": function(errors) {
-			status.text("Could not proxy to content base target!");
-			okness.text("Proxy error.");
-			$errors.text("\n" + stripAnsi(errors.join("\n\n\n")) + "\n\n");
-			header.css({
-				borderColor: "#ebcb8b"
-			});
-			$errors.show();
+			console.debug("Could not proxy to content base target!");
+			console.error("Proxy error.", errors);
 			iframe.hide();
 		},
 		close: function() {
-			status.text("");
-			okness.text("Disconnected.");
-			$errors.text("\n\n\n  Lost connection to webpack-dev-server.\n  Please restart the server to reestablish connection...\n\n\n\n");
-			header.css({
-				borderColor: "#ebcb8b"
-			});
-			$errors.show();
+			console.info("Disconnected.");
+			console.debug("\n\n\n  Lost connection to webpack-dev-server.\n  Please restart the server to reestablish connection...\n\n\n\n");
 			iframe.hide();
 		}
 	};
@@ -94,16 +59,13 @@ $(function() {
 	socket("/sockjs-node", onSocketMsg);
 
 	iframe.load(function() {
-		status.text("App ready.");
-		header.css({
-			borderColor: ""
-		});
+		console.debug("App ready.");
 		iframe.show();
 	});
 
 	function reloadApp() {
 		if(hot) {
-			status.text("App hot update.");
+			console.debug("App hot update.");
 			try {
 				iframe[0].contentWindow.postMessage("webpackHotUpdate" + currentHash, "*");
 			} catch(e) {
@@ -111,10 +73,7 @@ $(function() {
 			}
 			iframe.show();
 		} else {
-			status.text("App updated. Reloading app...");
-			header.css({
-				borderColor: "#96b5b4"
-			});
+			console.debug("App updated. Reloading app...");
 			try {
 				var old = iframe[0].contentWindow.location + "";
 				if(old.indexOf("about") == 0) old = null;
